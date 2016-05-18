@@ -1,0 +1,109 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<title>
+		轮播视频图片
+	</title>
+	<style>
+	*{
+		padding: 0;
+		margin: 0;
+	}
+		html,body{
+			width: 100%;
+			height: 100%;
+			background: #000
+		}
+		img{
+			width: 100%;
+			height: 100%;
+		}
+	</style>
+	<script type="text/javascript">
+
+	//图片显示5秒轮播下一个，视频则是播放完轮播下一个
+	//jsonData是所需数据   url:视频或图片地址;type: 1 图片 2 视频  index: 顺序
+
+	var jsonData = [{url:'http://assets.jq22.com/plugin/2015-10-27-17-10-05.jpg',type:1,index:1},
+				    {url:'http://pic1.sc.chinaz.com/files/pic/webjs1/201603/jiaoben4105.jpg',type:1,index:2},
+				    {url:'http://7xtiwy.com1.z0.glb.clouddn.com/v0015r2buo4.mp4',type:2,index:3},
+				    {url:'http://assets.jq22.com/plugin/2015-10-27-17-10-05.jpg',type:1,index:4},
+				    {url:'http://7xtiwy.com1.z0.glb.clouddn.com/v0015r2buo4.mp4',type:2,index:5}
+	                ];
+
+	window.onload=function(){
+		if(jsonData.length>1){ //图片或视频大于1时轮播
+			carousel(jsonData[0]);	
+		}else{
+			oneData(jsonData[0]); //等于1的时候显示
+		}	 
+	}
+
+	function oneData(data){
+		if(data.type==1){
+			document.getElementById("imgurl").src = data.url;
+			document.getElementById("video").style.display="none";
+			document.getElementById("img").style.display="block";
+		}else if(data.type==2){
+			document.getElementById("video").src= data.url;
+			document.getElementById("img").style.display="none";
+			document.getElementById("video").style.display="block";
+		}
+	}
+
+	var j= 0;//控制台打印循环（只是为调试bug，可删除j）
+	var timeID;
+	function carousel(data) {
+		j++;
+		clearTimeout(timeID); //清除循环
+		if(data.type==1){
+			document.getElementById("imgurl").src = data.url;
+			document.getElementById("video").style.display="none";
+			document.getElementById("img").style.display="block";
+			console.log("图片--------------"+j);
+			if(data.index >= jsonData.length){
+				//轮播到最后一个，，，继续循环第一个;
+				var param = jsonData[0];
+				j=0;
+				timeID = setTimeout(function(){carousel(param)},5000);
+			}else{
+				var i = data.index;
+				var param = jsonData[i];
+				timeID = setTimeout(function(){carousel(param)},5000);
+			}			
+		}else if(data.type==2){
+			document.getElementById("video").src= data.url;
+			document.getElementById("img").style.display="none";
+			document.getElementById("video").style.display="block";
+			console.log("视频--------------"+j);
+			timeID = setTimeout(waitVideo,1000); //等待视频播放，为了获取视频的"ended"事件
+			function waitVideo(){
+				if(data.index >= jsonData.length){
+					//轮播到最后一个，，继续循环第一个;
+					var param = jsonData[0];
+					j=0;
+					document.getElementById("video").addEventListener("ended", function lister(){
+						carousel(param);
+						document.getElementById("video").removeEventListener("ended", lister);
+					});
+				}else{
+					var i = data.index;
+					var param = jsonData[i];
+					document.getElementById("video").addEventListener("ended", function lister(){ //监听视频播放完成，之后继续循环
+						carousel(param);
+						document.getElementById("video").removeEventListener("ended", lister); //清除监听
+					});
+				}
+			}
+		}
+	}
+	</script>
+</head>
+<body>
+<div style="width:100%;height:100%" id="img"  style="display:none">
+	<img src="" id="imgurl"/>
+</div>
+<video width="100%" height="100%" autoplay="autoplay" id="video" style="display:none">
+</video>
+</body>
+</html>
